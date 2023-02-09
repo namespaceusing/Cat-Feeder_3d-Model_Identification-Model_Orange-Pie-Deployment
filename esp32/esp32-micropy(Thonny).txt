@@ -1,0 +1,92 @@
+import network
+from machine import Pin,PWM
+import usocket as socket  # 引用socket模块
+import time,random
+# 
+# ap = network.WLAN(network.AP_IF)
+# ap.config(essid='117-104', authmode=4, password='13851805566')
+# ap.active(True)  # 开启无线热点
+wifi = network.WLAN(network.STA_IF)
+wifi.active(True)
+if not wifi.isconnected():
+    print('connecting to network...')
+    wifi.connect('117-104', '13851805566')
+    while not wifi.isconnected():
+        pass
+#电机
+pwm1 = PWM(Pin(26,Pin.OUT))
+pwm1.duty(0)
+
+beep = PWM(Pin(25,Pin.OUT))
+
+#舵机
+pwm4= PWM(Pin(13,Pin.OUT))
+pwm4.freq(50)
+
+led = Pin(32,Pin.OUT)
+led.value(1)
+beep.duty(0)
+s = socket.socket()
+s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # (重要)设置端口释放后立即就可以被再次使用
+s.bind(socket.getaddrinfo("0.0.0.0", 80)[0][-1])  # 绑定地址
+s.listen(5)  # 开启监听（最大连接数5）
+
+print('接入热点后可从浏览器访问下面地址：')
+print(wifi.ifconfig()[0])
+print('')
+
+while True:  # mian()函数中进行死循环，在这里保持监听浏览器请求与对应处理
+    client_sock, client_addr = s.accept()  # 接收来自客户端的请求与客户端地址
+    
+    q = ''
+    while True:
+        h = client_sock.readline()  # 按行读取来自客户端的请求内容
+        q += h.decode('utf8')
+        if h == b'' or h == b'\r\n':  # 当读取到空行的时候表示接收到一个完整的请求头
+            break
+
+    if q.startswith('GET / HTTP/1.1'): # 从浏览器访问 /
+        print('ready')
+       #蜂鸣器响三声
+        beep.freq(660)
+        
+        beep.duty(30)
+        time.sleep(0.5)
+        beep.duty(0)    
+        time.sleep(0.5)
+        beep.duty(30)
+        time.sleep(0.5)
+        beep.duty(0)    
+        time.sleep(0.5)
+        beep.duty(30)
+        time.sleep(0.5)
+        beep.duty(0)    
+        time.sleep(0.5)
+
+        #电机
+        pwm1.init()
+        pwm1.freq(1023)
+        pwm1.duty(100)
+        time.sleep(1.8)
+        pwm1.deinit()
+
+        #舵机转动
+        angle=0
+        pwm4.duty(int(((angle)/90+0.5)/20*1023))
+
+        time.sleep(5)#等待五秒
+
+        a=90
+        pwm4.duty(int(((a)/90+0.5)/20*1023))
+
+        time.sleep(1)
+
+
+        beep.freq(660)
+        beep.duty(30)
+        time.sleep(2)
+        beep.duty(0)
+        time.sleep(1)
+
+        led.value(0)
+    client_sock.close()
