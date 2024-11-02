@@ -13,7 +13,7 @@ https://aistudio.baidu.com/aistudio/projectdetail/5428334?contributionType=1
 
 **Ai-studio链接：**
 山东大学威海校区数据科学实验班22级喂猫机-山威五常组：https://aistudio.baidu.com/projectdetail/6622548?contributionType=1&sUid=2730448&shared=1&ts=1692086342016
-:
+
   项目介绍
   
   项目演示与讲解
